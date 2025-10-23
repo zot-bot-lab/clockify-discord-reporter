@@ -174,7 +174,7 @@ async function getClockifyLogs() {
 
 // Run every weekday (Mon–Fri) at 4:00 PM Colombo time
 cron.schedule(
-  "39 12 * * 1-5",  // 4:00 PM = 16:00
+  "0 16 * * 1-5",  // 4:00 PM = 16:00
   async () => {
     try {
       const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
@@ -190,11 +190,26 @@ cron.schedule(
   }
 );
 
-client.once("clientReady", () => {
+client.once("clientReady", async () => {
   console.log(`✅ Bot is running as ${client.user.tag}`);
+  
+  // If running in GitHub Actions, send report immediately and exit
+  if (process.env.GITHUB_ACTIONS) {
+    console.log('Running in GitHub Actions mode - sending report now...');
+    try {
+      const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
+      const report = await getClockifyLogs();
+      await channel.send(report);
+      console.log("✅ Report sent successfully");
+      process.exit(0); // Exit after sending
+    } catch (err) {
+      console.error("Error sending report:", err);
+      process.exit(1); // Exit with error
+    }
+  }
 });
 
 client.login(process.env.DISCORD_TOKEN);
 
-// Test call - uncomment to test immediately
+// Test call - remove in production or keep for local testing
 // getClockifyLogs().then(console.log);
