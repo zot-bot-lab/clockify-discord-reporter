@@ -2,9 +2,9 @@ name: Clockify Daily Report
 
 on:
   schedule:
-    # Runs at 10:30 AM UTC (4:00 PM Sri Lanka time, UTC+5:30)
+    # Runs at 3:30 AM UTC (9:00 AM Sri Lanka time, UTC+5:30)
     # Format: minute hour day month day-of-week
-    - cron: '30 10 * * 1-5'  # Monday to Friday
+    - cron: '30 3 * * 1-5'  # Monday to Friday
   workflow_dispatch:  # Allows manual trigger from GitHub UI
 
 jobs:
