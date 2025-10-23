@@ -61,7 +61,7 @@ async function getClockifyLogs() {
       // Use the time-entries endpoint instead of reports
       const url = `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?start=${startUTC}&end=${endUTC}`;
       
-      console.log(`Fetching logs for @${discordTag}...`);
+      console.log(`Fetching logs for <@${discordTag}>...`);
       console.log(`URL: ${url}`);
 
       const reportRes = await fetch(url, {
@@ -71,18 +71,18 @@ async function getClockifyLogs() {
 
       if (!reportRes.ok) {
         const errorText = await reportRes.text();
-        console.error(`Clockify API error for @${discordTag}: ${reportRes.status}`);
+        console.error(`Clockify API error for <@${discordTag}>: ${reportRes.status}`);
         console.error(`Response: ${errorText}`);
-        reportLines.push(`@${discordTag}\n- Error fetching logs`);
+        reportLines.push(`<@${discordTag}>\n- Error fetching logs`);
         continue;
       }
 
       const logs = await reportRes.json();
-      console.log(`\n--- @${discordTag} ---`);
+      console.log(`\n--- <@${discordTag}> ---`);
       console.log(`Total logs returned: ${logs.length}`);
 
       if (!logs || !logs.length) {
-        reportLines.push(`@${discordTag}\n- No logs`);
+        reportLines.push(`<@${discordTag}>\n- No logs`);
         continue;
       }
 
@@ -129,7 +129,7 @@ async function getClockifyLogs() {
       console.log(`Filtered logs (included): ${targetDateLogs.length}`);
 
       if (!targetDateLogs.length) {
-        reportLines.push(`@${discordTag}\n- No logs`);
+        reportLines.push(`<@${discordTag}>\n- No logs`);
         continue;
       }
 
@@ -159,11 +159,11 @@ async function getClockifyLogs() {
       }
 
       if (issues.length > 0) {
-        reportLines.push(`@${discordTag} (${timeLogged})\n- ${issues.join("\n- ")}`);
+        reportLines.push(`<@${discordTag}> (${timeLogged})\n- ${issues.join("\n- ")}`);
       }
     } catch (error) {
-      console.error(`Error processing logs for @${discordTag}:`, error);
-      reportLines.push(`@${discordTag}\n- Error fetching logs`);
+      console.error(`Error processing logs for <@${discordTag}>:`, error);
+      reportLines.push(`<@${discordTag}>\n- Error fetching logs`);
     }
   }
 
@@ -210,4 +210,4 @@ client.once("clientReady", async () => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Test call - remove in production or keep for local testing
-// getClockifyLogs().then(console.log);
+getClockifyLogs().then(console.log);
