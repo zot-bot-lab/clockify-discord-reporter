@@ -104,7 +104,7 @@ async function getClockifyLogs() {
       console.log(`Total logs returned: ${logs.length}`);
 
       if (!logs || !logs.length) {
-        reportLines.push(`$<@{discordTag}>\n- No logs`);
+        reportLines.push(`<@${discordTag}>\n- No logs`);
         continue;
       }
 
