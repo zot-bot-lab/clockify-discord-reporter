@@ -85,7 +85,11 @@ async function getClockifyLogs() {
   console.log(`Query range (wide): ${startUTC} to ${endUTC}`);
   console.log(`========================================\n`);
 
-  let reportLines = [`Time log issues ${displayDate}`];
+  // Header for the report
+  let reportHeader = `📝 **Daily Time Log Report** - ${displayDate}`;
+
+  let issuesList = [];
+  let praiseList = [];
 
   for (const [userId, discordTag] of Object.entries(USERS)) {
     try {
@@ -104,7 +108,7 @@ async function getClockifyLogs() {
         const errorText = await reportRes.text();
         console.error(`Clockify API error for <@${discordTag}>: ${reportRes.status}`);
         console.error(`Response: ${errorText}`);
-        reportLines.push(`<@${discordTag}>\n- Error fetching logs`);
+        issuesList.push(`⚠️ <@${discordTag}>\n- Error fetching logs`);
         continue;
       }
 
@@ -113,7 +117,7 @@ async function getClockifyLogs() {
       console.log(`Total logs returned: ${logs.length}`);
 
       if (!logs || !logs.length) {
-        reportLines.push(`<@${discordTag}>\n- No logs`);
+        issuesList.push(`❌ <@${discordTag}>\n- No logs`);
         continue;
       }
 
@@ -160,7 +164,7 @@ async function getClockifyLogs() {
       console.log(`Filtered logs (included): ${targetDateLogs.length}`);
 
       if (!targetDateLogs.length) {
-        reportLines.push(`<@${discordTag}>\n- No logs`);
+        issuesList.push(`❌ <@${discordTag}>\n- No logs`);
         continue;
       }
 
@@ -190,15 +194,35 @@ async function getClockifyLogs() {
       }
 
       if (issues.length > 0) {
-        reportLines.push(`<@${discordTag}> (${timeLogged})\n- ${issues.join("\n- ")}`);
+        issuesList.push(`⚠️ <@${discordTag}> (${timeLogged})\n- ${issues.join("\n- ")}`);
+      } else if (totalHours > 6.5) {
+        praiseList.push(`🌟 <@${discordTag}> (${timeLogged})`);
       }
+
     } catch (error) {
       console.error(`Error processing logs for <@${discordTag}>:`, error);
-      reportLines.push(`<@${discordTag}>\n- Error fetching logs`);
+      issuesList.push(`⚠️ <@${discordTag}>\n- Error fetching logs`);
     }
   }
 
-  return reportLines.join("\n");
+  let finalReport = [reportHeader];
+
+  if (issuesList.length > 0) {
+    finalReport.push(`\n👇 **Attention Needed**`);
+    finalReport.push(...issuesList);
+  }
+
+  if (praiseList.length > 0) {
+    finalReport.push(`\n🏆 **Top Performers ( > 6.5h )**`);
+    finalReport.push(...praiseList);
+  }
+
+  if (issuesList.length === 0 && praiseList.length === 0) {
+    // If everyone is between 6.0 and 6.5 or valid but not "Top"
+    finalReport.push(`\n✅ All good! Everyone met the targets.`);
+  }
+
+  return finalReport.join("\n");
 }
 
 // Run every weekday (Mon–Fri) at 4:00 PM Colombo time
