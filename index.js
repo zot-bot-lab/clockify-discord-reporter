@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const dotenv = require("dotenv");
 const cron = require("node-cron");
 const { USERS } = require("./users.js");
+const { isPublicHoliday } = require("./holidays.js");
 
 dotenv.config();
 
@@ -61,6 +62,14 @@ async function getClockifyLogs() {
   const [year, month, day] = targetDateInSL.split('-');
   const displayDate = `${day}/${month}/${year}`;
   const targetDateStr = targetDateInSL; // YYYY-MM-DD format
+
+  // Check if target date is a public holiday
+  if (isPublicHoliday(targetDateStr)) {
+    console.log(`\n========================================`);
+    console.log(`Skipping report: ${targetDateStr} is a public holiday in Sri Lanka.`);
+    console.log(`========================================\n`);
+    return null;
+  }
 
   // Query a wider range to make sure we get all logs
   // Go from 5 days ago to today to cover all possible timezone overlaps and weekends
@@ -199,11 +208,15 @@ cron.schedule(
     try {
       const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
       const report = await getClockifyLogs();
-      await channel.send({
-        content: report,
-        allowedMentions: { parse: ['users'] }
-      });
-      console.log("✅ Report sent successfully");
+      if (report) {
+        await channel.send({
+          content: report,
+          allowedMentions: { parse: ['users'] }
+        });
+        console.log("✅ Report sent successfully");
+      } else {
+        console.log("ℹ️ No report to send (Holiday or empty).");
+      }
     } catch (err) {
       console.error("Error sending report:", err);
     }
@@ -222,12 +235,16 @@ client.once("clientReady", async () => {
     try {
       const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
       const report = await getClockifyLogs();
-      await channel.send({
-        content: report,
-        allowedMentions: { parse: ['users'] }
-      });
-      console.log("✅ Report sent successfully");
-      process.exit(0); // Exit after sending
+      if (report) {
+        await channel.send({
+          content: report,
+          allowedMentions: { parse: ['users'] }
+        });
+        console.log("✅ Report sent successfully");
+      } else {
+        console.log("ℹ️ No report to send (Holiday or empty).");
+      }
+      process.exit(0); // Exit after sending (or skipping)
     } catch (err) {
       console.error("Error sending report:", err);
       process.exit(1); // Exit with error
