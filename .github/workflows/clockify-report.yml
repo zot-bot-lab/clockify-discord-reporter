@@ -1,4 +1,4 @@
-name: Clockify Daily Report
+name: Clockify Discord Report
 
 on:
   schedule:
@@ -30,4 +30,9 @@ jobs:
           PROJECT_MANAGEMENT_CHANNEL_ID: ${{ secrets.PROJECT_MANAGEMENT_CHANNEL_ID }}
           CLOCKIFY_API_KEY: ${{ secrets.CLOCKIFY_API_KEY }}
           CLOCKIFY_WORKSPACE_ID: ${{ secrets.CLOCKIFY_WORKSPACE_ID }}
-        run: node index.js
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            node trigger.js
+          else
+            node index.js
+          fi
